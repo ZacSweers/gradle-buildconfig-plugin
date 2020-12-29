@@ -14,8 +14,8 @@ internal object KotlinMultiplatformBindingHandler : PluginBindingHandler {
     override fun invoke(project: Project, extension: BuildConfigExtension, sourceSetProvider: SourceSetProvider) {
         extension.useKotlinOutput()
 
-        (project.kotlinExtension as KotlinTargetsContainer).targets.all { target ->
-            target.compilations.all { compilation ->
+        (project.kotlinExtension as KotlinTargetsContainer).targets.configureEach { target ->
+            target.compilations.configureEach { compilation ->
                 compilation.allKotlinSourceSets.forEach { ss ->
                     val name = when (ss.name) {
                         KotlinSourceSet.COMMON_MAIN_SOURCE_SET_NAME -> BuildConfigPlugin.DEFAULT_SOURCE_SET_NAME

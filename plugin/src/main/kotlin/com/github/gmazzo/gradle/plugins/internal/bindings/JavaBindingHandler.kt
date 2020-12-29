@@ -12,7 +12,7 @@ internal object JavaBindingHandler : PluginBindingHandler {
     override fun invoke(project: Project, extension: BuildConfigExtension, sourceSetProvider: SourceSetProvider) {
         extension.useJavaOutput()
 
-        project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.all { ss ->
+        project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.configureEach { ss ->
             DslObject(ss).convention.plugins["buildConfig"] = sourceSetProvider(ss.name) { project.bindSpec(it, ss) }
         }
     }

@@ -19,7 +19,7 @@ internal abstract class KotlinBindingHandler : PluginBindingHandler {
     override fun invoke(project: Project, extension: BuildConfigExtension, sourceSetProvider: SourceSetProvider) {
         extension.useKotlinOutput()
 
-        project.kotlinExtension.sourceSets.all { ss ->
+        project.kotlinExtension.sourceSets.configureEach { ss ->
             sourceSetProvider(ss.name) { project.bindSpec(it, ss) }
         }
     }

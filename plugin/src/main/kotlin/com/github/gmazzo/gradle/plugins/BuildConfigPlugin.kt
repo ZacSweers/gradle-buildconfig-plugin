@@ -29,7 +29,7 @@ class BuildConfigPlugin : Plugin<Project> {
             defaultSS
         )
 
-        sourceSets.all {
+        sourceSets.configureEach {
             configureSourceSet(project, it, defaultSS.classSpec)
         }
 
@@ -44,7 +44,7 @@ class BuildConfigPlugin : Plugin<Project> {
                         sourceSets.maybeCreate(name).apply {
                             onSpec(classSpec)
 
-                            extraSpecs.all { extra ->
+                            extraSpecs.configureEach { extra ->
                                 if (taskGraphLocked) {
                                     throw IllegalStateException("Can't call 'forClass' after taskGraph was built!")
                                 }
@@ -71,7 +71,7 @@ class BuildConfigPlugin : Plugin<Project> {
             descriptionSuffix = "'${sourceSet.name}' source"
         )
 
-        sourceSet.extraSpecs.all { subSpec ->
+        sourceSet.extraSpecs.configureEach { subSpec ->
             val childPrefix = prefix + subSpec.name.capitalize()
 
             createGenerateTask(
