@@ -97,12 +97,10 @@ class BuildConfigPlugin : Plugin<Project> {
             task.outputDir =
                 project.file("${project.buildDir}/generated/source/buildConfig/${sourceSet.name}/${spec.name.decapitalize()}")
 
-            project.afterEvaluate {
-                task.className = spec.className ?: defaultSpec.className ?: "${prefix}BuildConfig"
-                task.packageName = spec.packageName ?: defaultSpec.packageName ?: project.defaultPackage
-                    .replace("[^a-zA-Z._$]".toRegex(), "_")
-                task.generator = spec.generator ?: defaultSpec.generator ?: BuildConfigJavaGenerator
-            }
+            task.className = spec.className ?: defaultSpec.className ?: "${prefix}BuildConfig"
+            task.packageName = spec.packageName ?: defaultSpec.packageName ?: project.defaultPackage
+                .replace("[^a-zA-Z._$]".toRegex(), "_")
+            task.generator = spec.generator ?: defaultSpec.generator ?: BuildConfigJavaGenerator
 
             task.doFirst {
                 task.outputDir.deleteRecursively()
