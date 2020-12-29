@@ -99,7 +99,7 @@ class BuildConfigPlugin : Plugin<Project> {
 
             task.className = spec.className ?: defaultSpec.className ?: "${prefix}BuildConfig"
             task.packageName = spec.packageName ?: defaultSpec.packageName ?: project.defaultPackage
-                .replace("[^a-zA-Z._$]".toRegex(), "_")
+                .replace(PACKAGE_REPLACE_REGEX, "_")
             task.generator = spec.generator ?: defaultSpec.generator ?: BuildConfigJavaGenerator
 
             task.doFirst {
@@ -118,6 +118,7 @@ class BuildConfigPlugin : Plugin<Project> {
     companion object {
 
         const val DEFAULT_SOURCE_SET_NAME = "main"
+        private val PACKAGE_REPLACE_REGEX = "[^a-zA-Z._$]".toRegex()
 
     }
 
