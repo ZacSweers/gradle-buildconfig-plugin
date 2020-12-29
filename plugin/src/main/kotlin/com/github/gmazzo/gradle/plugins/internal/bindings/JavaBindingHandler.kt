@@ -18,10 +18,8 @@ internal object JavaBindingHandler : PluginBindingHandler {
     }
 
     private fun Project.bindSpec(spec: BuildConfigClassSpec, sourceSet: SourceSet) {
-        with(spec.generateTask) {
-            sourceSet.java.srcDir(outputDir)
-            tasks.getAt(sourceSet.compileJavaTaskName).dependsOn(this)
-        }
+        sourceSet.java.srcDir(spec.generateTask.map { it.outputDir })
+        tasks.getAt(sourceSet.compileJavaTaskName).dependsOn(spec.generateTask)
     }
 
 }

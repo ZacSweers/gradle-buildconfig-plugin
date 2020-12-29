@@ -25,11 +25,8 @@ internal abstract class KotlinBindingHandler : PluginBindingHandler {
     }
 
     private fun Project.bindSpec(spec: BuildConfigClassSpec, sourceSet: KotlinSourceSet) {
-        with(spec.generateTask) {
-            sourceSet.kotlin.srcDir(outputDir)
-
-            tasks.getByName(sourceSet.compileTaskName).dependsOn(this)
-        }
+        sourceSet.kotlin.srcDir(spec.generateTask.map { it.outputDir })
+        tasks.getByName(sourceSet.compileTaskName).dependsOn(spec.generateTask)
     }
 
 }

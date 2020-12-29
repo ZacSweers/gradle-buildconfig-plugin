@@ -39,11 +39,8 @@ internal object KotlinMultiplatformBindingHandler : PluginBindingHandler {
         spec: BuildConfigClassSpec,
         sourceSet: KotlinSourceSet
     ) {
-        with(spec.generateTask) {
-            sourceSet.kotlin.srcDir(outputDir)
-
-            tasks.getByName(compilation.compileKotlinTaskName).dependsOn(this)
-        }
+        sourceSet.kotlin.srcDir(spec.generateTask.map { it.outputDir })
+        tasks.getByName(compilation.compileKotlinTaskName).dependsOn(spec.generateTask)
     }
 
 }

@@ -4,6 +4,7 @@ import com.github.gmazzo.gradle.plugins.generators.BuildConfigGenerator
 import com.github.gmazzo.gradle.plugins.generators.BuildConfigJavaGenerator
 import com.github.gmazzo.gradle.plugins.generators.BuildConfigKotlinGenerator
 import org.gradle.api.Named
+import org.gradle.api.tasks.TaskProvider
 
 interface BuildConfigClassSpec : Named {
 
@@ -49,6 +50,6 @@ interface BuildConfigClassSpec : Named {
     fun buildConfigField(type: String, name: String, value: () -> String) =
         buildConfigField(BuildConfigField(type, name, value()))
 
-    val generateTask: BuildConfigTask
+    val generateTask: TaskProvider<BuildConfigTask>
 
 }

@@ -88,28 +88,27 @@ class BuildConfigPlugin : Plugin<Project> {
         spec: BuildConfigClassSpecInternal,
         defaultSpec: BuildConfigClassSpecInternal,
         descriptionSuffix: String
-    ) =
-        project.tasks.create("generate${prefix}BuildConfig", BuildConfigTask::class.java).apply {
-            group = "BuildConfig"
-            description = "Generates the build constants class for $descriptionSuffix"
+    ) {
+        spec.generateTask = project.tasks.register("generate${prefix}BuildConfig", BuildConfigTask::class.java) { task ->
+            task.group = "BuildConfig"
+            task.description = "Generates the build constants class for $descriptionSuffix"
 
-            fields = spec.fields.values
-            outputDir =
+            task.fields = spec.fields.values
+            task.outputDir =
                 project.file("${project.buildDir}/generated/source/buildConfig/${sourceSet.name}/${spec.name.decapitalize()}")
 
             project.afterEvaluate {
-                className = spec.className ?: defaultSpec.className ?: "${prefix}BuildConfig"
-                packageName = spec.packageName ?: defaultSpec.packageName ?: project.defaultPackage
+                task.className = spec.className ?: defaultSpec.className ?: "${prefix}BuildConfig"
+                task.packageName = spec.packageName ?: defaultSpec.packageName ?: project.defaultPackage
                     .replace("[^a-zA-Z._$]".toRegex(), "_")
-                generator = spec.generator ?: defaultSpec.generator ?: BuildConfigJavaGenerator
+                task.generator = spec.generator ?: defaultSpec.generator ?: BuildConfigJavaGenerator
             }
 
-            spec.generateTask = this
-
-            doFirst {
-                outputDir.deleteRecursively()
+            task.doFirst {
+                task.outputDir.deleteRecursively()
             }
         }
+    }
 
     private val Project.defaultPackage
         get() = group
