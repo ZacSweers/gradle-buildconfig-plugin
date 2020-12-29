@@ -6,6 +6,7 @@ import com.github.gmazzo.gradle.plugins.internal.bindings.PluginBindings
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
+import java.util.concurrent.atomic.AtomicBoolean
 
 class BuildConfigPlugin : Plugin<Project> {
 
@@ -34,9 +35,9 @@ class BuildConfigPlugin : Plugin<Project> {
         }
 
         with(project) {
-            var taskGraphLocked = false
+            val taskGraphLocked = AtomicBoolean()
 
-            gradle.taskGraph.whenReady { taskGraphLocked = true }
+            gradle.taskGraph.whenReady { taskGraphLocked.set(true) }
 
             PluginBindings.values().forEach {
                 pluginManager.withPlugin(it.pluginId) { _ ->
@@ -45,7 +46,7 @@ class BuildConfigPlugin : Plugin<Project> {
                             onSpec(classSpec)
 
                             extraSpecs.configureEach { extra ->
-                                if (taskGraphLocked) {
+                                if (taskGraphLocked.get()) {
                                     throw IllegalStateException("Can't call 'forClass' after taskGraph was built!")
                                 }
                                 onSpec(extra)
