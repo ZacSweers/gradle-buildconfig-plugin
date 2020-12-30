@@ -1,7 +1,11 @@
 package com.github.gmazzo.gradle.plugins
 
 import com.github.gmazzo.gradle.plugins.generators.BuildConfigJavaGenerator
-import com.github.gmazzo.gradle.plugins.internal.*
+import com.github.gmazzo.gradle.plugins.internal.BuildConfigClassSpecInternal
+import com.github.gmazzo.gradle.plugins.internal.BuildConfigSourceSetInternal
+import com.github.gmazzo.gradle.plugins.internal.DefaultBuildConfigClassSpec
+import com.github.gmazzo.gradle.plugins.internal.DefaultBuildConfigExtension
+import com.github.gmazzo.gradle.plugins.internal.DefaultBuildConfigSourceSet
 import com.github.gmazzo.gradle.plugins.internal.bindings.PluginBindings
 import org.gradle.api.Plugin
 import org.gradle.api.Project

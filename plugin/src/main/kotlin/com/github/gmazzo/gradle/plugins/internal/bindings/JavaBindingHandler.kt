@@ -1,6 +1,5 @@
 package com.github.gmazzo.gradle.plugins.internal.bindings
 
-import com.github.gmazzo.gradle.plugins.BuildConfigClassSpec
 import com.github.gmazzo.gradle.plugins.BuildConfigExtension
 import com.github.gmazzo.gradle.plugins.BuildConfigTask
 import org.gradle.api.Project
