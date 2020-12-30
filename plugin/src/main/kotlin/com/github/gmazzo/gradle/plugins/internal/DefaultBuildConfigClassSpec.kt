@@ -1,8 +1,6 @@
 package com.github.gmazzo.gradle.plugins.internal
 
 import com.github.gmazzo.gradle.plugins.BuildConfigField
-import com.github.gmazzo.gradle.plugins.BuildConfigTask
-import org.gradle.api.tasks.TaskProvider
 import javax.inject.Inject
 
 internal abstract class DefaultBuildConfigClassSpec @Inject constructor(
@@ -10,8 +8,6 @@ internal abstract class DefaultBuildConfigClassSpec @Inject constructor(
 ) : BuildConfigClassSpecInternal {
 
     override fun getName() = name
-
-    override lateinit var generateTask: TaskProvider<BuildConfigTask>
 
     override fun buildConfigField(field: BuildConfigField) =
         field.also { fields.put(it.name, it) }

@@ -6,6 +6,8 @@ import com.github.gmazzo.gradle.plugins.internal.bindings.PluginBindings
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
+import org.gradle.api.tasks.TaskProvider
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BuildConfigPlugin : Plugin<Project> {
@@ -32,8 +34,9 @@ class BuildConfigPlugin : Plugin<Project> {
             defaultSS
         )
 
+        val taskProviders = ConcurrentHashMap<String, TaskProvider<BuildConfigTask>>()
         sourceSets.configureEach {
-            configureSourceSet(project, it, defaultSS.classSpec)
+            configureSourceSet(project, it, defaultSS.classSpec, taskProviders)
         }
 
         with(project) {
@@ -43,15 +46,15 @@ class BuildConfigPlugin : Plugin<Project> {
 
             PluginBindings.values().forEach {
                 pluginManager.withPlugin(it.pluginId) { _ ->
-                    it.handler(project, extension) { name, onSpec ->
+                    it.handler(project, extension) { name: String, onSpec: (TaskProvider<BuildConfigTask>) -> Unit ->
                         sourceSets.maybeCreate(name).apply {
-                            onSpec(classSpec)
+                            onSpec(taskProviders.getValue(name.interpolatedPrefix().interpolatedTaskName()))
 
                             extraSpecs.configureEach { extra ->
                                 if (taskGraphLocked.get()) {
                                     throw IllegalStateException("Can't call 'forClass' after taskGraph was built!")
                                 }
-                                onSpec(extra)
+                                onSpec(taskProviders.getValue(extra.name.interpolatedPrefix().interpolatedTaskName()))
                             }
                         }
                     }
@@ -60,27 +63,38 @@ class BuildConfigPlugin : Plugin<Project> {
         }
     }
 
+    private fun String.interpolatedTaskName(): String {
+        return "generate${this}BuildConfig"
+    }
+
+    private fun String.interpolatedPrefix(): String {
+        return takeUnless { it.equals("main", ignoreCase = true) }?.capitalize() ?: ""
+    }
+
     private fun configureSourceSet(
         project: Project,
         sourceSet: BuildConfigSourceSetInternal,
-        defaultSpec: BuildConfigClassSpecInternal
+        defaultSpec: BuildConfigClassSpecInternal,
+        taskProviders: MutableMap<String, TaskProvider<BuildConfigTask>>
     ) {
         logger.debug("Creating buildConfig sourceSet '${sourceSet.name}' for $project")
 
-        val prefix = sourceSet.name.takeUnless { it.equals("main", ignoreCase = true) }?.capitalize() ?: ""
+        val prefix = sourceSet.name.interpolatedPrefix()
 
-        createGenerateTask(
+        val task = createGenerateTask(
             project, prefix, sourceSet, sourceSet.classSpec, defaultSpec,
             descriptionSuffix = "'${sourceSet.name}' source"
         )
+        taskProviders[task.name] = task
 
         sourceSet.extraSpecs.configureEach { subSpec ->
             val childPrefix = prefix + subSpec.name.capitalize()
 
-            createGenerateTask(
+            val subtask = createGenerateTask(
                 project, childPrefix, sourceSet, subSpec, defaultSpec,
                 descriptionSuffix = "'${subSpec.name}' spec on '${sourceSet.name}' source"
             )
+            taskProviders[subtask.name] = subtask
         }
     }
 
@@ -91,8 +105,8 @@ class BuildConfigPlugin : Plugin<Project> {
         spec: BuildConfigClassSpecInternal,
         defaultSpec: BuildConfigClassSpecInternal,
         descriptionSuffix: String
-    ) {
-        spec.generateTask = project.tasks.register("generate${prefix}BuildConfig", BuildConfigTask::class.java) { task ->
+    ): TaskProvider<BuildConfigTask> =
+        project.tasks.register(prefix.interpolatedTaskName(), BuildConfigTask::class.java) { task ->
             task.group = "BuildConfig"
             task.description = "Generates the build constants class for $descriptionSuffix"
 
@@ -109,7 +123,6 @@ class BuildConfigPlugin : Plugin<Project> {
                 task.outputDir.asFile.get().deleteRecursively()
             }
         }
-    }
 
     private val Project.defaultPackage
         get() = group

@@ -2,10 +2,12 @@ package com.github.gmazzo.gradle.plugins.internal.bindings
 
 import com.github.gmazzo.gradle.plugins.BuildConfigClassSpec
 import com.github.gmazzo.gradle.plugins.BuildConfigExtension
+import com.github.gmazzo.gradle.plugins.BuildConfigTask
 import org.gradle.api.Project
 import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.TaskProvider
 
 internal object JavaBindingHandler : PluginBindingHandler {
 
@@ -17,9 +19,9 @@ internal object JavaBindingHandler : PluginBindingHandler {
         }
     }
 
-    private fun Project.bindSpec(spec: BuildConfigClassSpec, sourceSet: SourceSet) {
-        sourceSet.java.srcDir(spec.generateTask.map { it.outputDir })
-        tasks.getAt(sourceSet.compileJavaTaskName).dependsOn(spec.generateTask)
+    private fun Project.bindSpec(taskProvider: TaskProvider<BuildConfigTask>, sourceSet: SourceSet) {
+        sourceSet.java.srcDir(taskProvider.map { it.outputDir })
+        tasks.getAt(sourceSet.compileJavaTaskName).dependsOn(taskProvider)
     }
 
 }

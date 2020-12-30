@@ -2,7 +2,9 @@ package com.github.gmazzo.gradle.plugins.internal.bindings
 
 import com.github.gmazzo.gradle.plugins.BuildConfigClassSpec
 import com.github.gmazzo.gradle.plugins.BuildConfigExtension
+import com.github.gmazzo.gradle.plugins.BuildConfigTask
 import org.gradle.api.Project
+import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
@@ -24,9 +26,9 @@ internal abstract class KotlinBindingHandler : PluginBindingHandler {
         }
     }
 
-    private fun Project.bindSpec(spec: BuildConfigClassSpec, sourceSet: KotlinSourceSet) {
-        sourceSet.kotlin.srcDir(spec.generateTask.map { it.outputDir })
-        tasks.getByName(sourceSet.compileTaskName).dependsOn(spec.generateTask)
+    private fun Project.bindSpec(taskProvider: TaskProvider<BuildConfigTask>, sourceSet: KotlinSourceSet) {
+        sourceSet.kotlin.srcDir(taskProvider.map { it.outputDir })
+        tasks.getByName(sourceSet.compileTaskName).dependsOn(taskProvider)
     }
 
 }

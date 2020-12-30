@@ -1,9 +1,10 @@
 package com.github.gmazzo.gradle.plugins.internal.bindings
 
-import com.github.gmazzo.gradle.plugins.BuildConfigClassSpec
 import com.github.gmazzo.gradle.plugins.BuildConfigExtension
 import com.github.gmazzo.gradle.plugins.BuildConfigPlugin
+import com.github.gmazzo.gradle.plugins.BuildConfigTask
 import org.gradle.api.Project
+import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetsContainer
@@ -27,7 +28,7 @@ internal object KotlinMultiplatformBindingHandler : PluginBindingHandler {
 
                 if (compilation is KotlinMetadataCompilation) {
                     sourceSetProvider(BuildConfigPlugin.DEFAULT_SOURCE_SET_NAME) {
-                        project.tasks.getByName(compilation.compileKotlinTaskName).dependsOn(it.generateTask)
+                        project.tasks.getByName(compilation.compileKotlinTaskName).dependsOn(it)
                     }
                 }
             }
@@ -36,11 +37,11 @@ internal object KotlinMultiplatformBindingHandler : PluginBindingHandler {
 
     private fun Project.bindSpec(
         compilation: KotlinCompilation<*>,
-        spec: BuildConfigClassSpec,
+        taskProvider: TaskProvider<BuildConfigTask>,
         sourceSet: KotlinSourceSet
     ) {
-        sourceSet.kotlin.srcDir(spec.generateTask.map { it.outputDir })
-        tasks.getByName(compilation.compileKotlinTaskName).dependsOn(spec.generateTask)
+        sourceSet.kotlin.srcDir(taskProvider.map { it.outputDir })
+        tasks.getByName(compilation.compileKotlinTaskName).dependsOn(taskProvider)
     }
 
 }
