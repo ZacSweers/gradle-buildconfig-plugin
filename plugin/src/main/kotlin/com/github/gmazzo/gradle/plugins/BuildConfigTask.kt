@@ -3,43 +3,54 @@ package com.github.gmazzo.gradle.plugins
 import com.github.gmazzo.gradle.plugins.generators.BuildConfigGenerator
 import com.github.gmazzo.gradle.plugins.generators.BuildConfigJavaGenerator
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.ProviderFactory
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.*
 import java.io.File
+import javax.inject.Inject
 
 @CacheableTask
-open class BuildConfigTask : DefaultTask(), BuildConfigTaskSpec {
+abstract class BuildConfigTask @Inject constructor(
+    objects: ObjectFactory
+) : DefaultTask(), BuildConfigTaskSpec {
 
-    @Input
-    override var className = "BuildConfig"
+    @get:Input
+    override val className: Property<String> = objects.property(String::class.java)
+        .convention("BuildConfig")
 
-    @Input
-    override var packageName = ""
+    @get:Input
+    override val packageName: Property<String> = objects.property(String::class.java)
+        .convention("")
 
-    @Internal
-    override var fields: Collection<BuildConfigField> = emptyList()
+    @get:Internal
+    override val fields: SetProperty<BuildConfigField> = objects.setProperty(BuildConfigField::class.java)
+        .convention(emptyList())
 
-    @Internal
-    var generator: BuildConfigGenerator? = null
-        get() = field ?: BuildConfigJavaGenerator
+    @get:Internal
+    val generator: Property<BuildConfigGenerator> = objects.property(BuildConfigGenerator::class.java)
+        .convention(BuildConfigJavaGenerator)
 
     @get:Input
     internal val generatorProperty
-        get() = generator!!::class.java
+        get() = generator::class.java
 
     @get:Input
     internal val fieldsProperty
         get() = fields.map { it.toString() }
 
-    @OutputDirectory
-    override lateinit var outputDir: File
+    @get:OutputDirectory
+    abstract override val outputDir: DirectoryProperty
 
     init {
-        onlyIf { fields.isNotEmpty() }
+        onlyIf { fields.get().isNotEmpty() }
     }
 
     @TaskAction
     protected fun generateBuildConfigFile() {
-        generator!!.execute(this)
+        generator.get().execute(this)
     }
 
 }

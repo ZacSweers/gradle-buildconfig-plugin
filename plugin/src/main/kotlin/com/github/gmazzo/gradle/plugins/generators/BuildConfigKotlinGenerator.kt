@@ -34,12 +34,12 @@ open class BuildConfigKotlinGenerator(
     override fun execute(spec: BuildConfigTaskSpec) {
         logger.debug("Generating ${spec.className} for fields ${spec.fields}")
 
-        val fields = spec.fields.asPropertiesSpec()
+        val fields = spec.fields.get().asPropertiesSpec()
 
-        FileSpec.builder(spec.packageName, spec.className)
+        FileSpec.builder(spec.packageName.get(), spec.className.get())
             .addFields(fields)
             .build()
-            .writeTo(spec.outputDir)
+            .writeTo(spec.outputDir.asFile.get())
     }
 
     private fun FileSpec.Builder.addFields(fields: List<PropertySpec>): FileSpec.Builder = when {

@@ -13,10 +13,10 @@ object BuildConfigJavaGenerator : BuildConfigGenerator {
     override fun execute(spec: BuildConfigTaskSpec) {
         logger.debug("Generating ${spec.className} for fields ${spec.fields}")
 
-        val typeSpec = TypeSpec.classBuilder(spec.className)
+        val typeSpec = TypeSpec.classBuilder(spec.className.get())
             .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
 
-        spec.fields.forEach {
+        spec.fields.get().forEach {
             val typeName = when (it.type) {
                 "String" -> TypeName.get(String::class.java)
                 else -> try {
@@ -35,7 +35,7 @@ object BuildConfigJavaGenerator : BuildConfigGenerator {
 
         JavaFile
             .builder(
-                spec.packageName, typeSpec
+                spec.packageName.get(), typeSpec
                     .addMethod(
                         MethodSpec.constructorBuilder()
                             .addModifiers(Modifier.PRIVATE)
@@ -44,7 +44,7 @@ object BuildConfigJavaGenerator : BuildConfigGenerator {
                     .build()
             )
             .build()
-            .writeTo(spec.outputDir)
+            .writeTo(spec.outputDir.asFile.get())
     }
 
 }

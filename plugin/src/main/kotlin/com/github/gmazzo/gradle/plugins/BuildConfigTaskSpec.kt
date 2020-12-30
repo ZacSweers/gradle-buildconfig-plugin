@@ -1,15 +1,15 @@
 package com.github.gmazzo.gradle.plugins
 
-import java.io.File
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 
 interface BuildConfigTaskSpec {
+    val className: Property<String>
 
-    val className: String
+    val packageName: Property<String>
 
-    val packageName: String
+    val fields: SetProperty<BuildConfigField>
 
-    val fields: Collection<BuildConfigField>
-
-    val outputDir: File
-
+    val outputDir: DirectoryProperty
 }

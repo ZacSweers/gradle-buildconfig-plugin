@@ -13,10 +13,12 @@ class BuildConfigPlugin : Plugin<Project> {
     private val logger = Logging.getLogger(javaClass)
 
     override fun apply(project: Project) {
-        val sourceSets = project.container(BuildConfigSourceSetInternal::class.java) { name ->
+        val sourceSets = project.objects.domainObjectContainer(BuildConfigSourceSetInternal::class.java) { name ->
             DefaultBuildConfigSourceSet(
-                DefaultBuildConfigClassSpec(name),
-                project.container(BuildConfigClassSpecInternal::class.java, ::DefaultBuildConfigClassSpec)
+                project.objects.newInstance(DefaultBuildConfigClassSpec::class.java, name),
+                project.objects.domainObjectContainer(BuildConfigClassSpecInternal::class.java) { newName ->
+                    project.objects.newInstance(DefaultBuildConfigClassSpec::class.java, newName)
+                }
             )
         }
 
@@ -94,17 +96,17 @@ class BuildConfigPlugin : Plugin<Project> {
             task.group = "BuildConfig"
             task.description = "Generates the build constants class for $descriptionSuffix"
 
-            task.fields = spec.fields.values
-            task.outputDir =
-                project.file("${project.buildDir}/generated/source/buildConfig/${sourceSet.name}/${spec.name.decapitalize()}")
+            task.fields.set(spec.fields.map { it.values })
+            task.outputDir.set(project.layout.buildDirectory.dir("generated/source/buildConfig/${sourceSet.name}/${spec.name.decapitalize()}"))
 
-            task.className = spec.className ?: defaultSpec.className ?: "${prefix}BuildConfig"
-            task.packageName = spec.packageName ?: defaultSpec.packageName ?: project.defaultPackage
-                .replace(PACKAGE_REPLACE_REGEX, "_")
-            task.generator = spec.generator ?: defaultSpec.generator ?: BuildConfigJavaGenerator
+            task.className.set(spec.className.orElse(defaultSpec.className).orElse("${prefix}BuildConfig"))
+            task.packageName.set(spec.packageName
+              .orElse(defaultSpec.packageName)
+              .orElse(project.provider { project.defaultPackage.replace(PACKAGE_REPLACE_REGEX, "_") }))
+            task.generator.set(spec.generator.orElse(defaultSpec.generator).orElse(BuildConfigJavaGenerator))
 
             task.doFirst {
-                task.outputDir.deleteRecursively()
+                task.outputDir.asFile.get().deleteRecursively()
             }
         }
     }
