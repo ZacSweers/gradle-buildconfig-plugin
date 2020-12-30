@@ -26,7 +26,9 @@ buildConfig {
     }
 
     forClass("Versions") {
-        useKotlinOutput(topLevelConstants = true)
+        useKotlinOutput {
+            topLevelConstants = true
+        }
 
         buildConfigField("String", "myDependencyVersion", "\"1.0.1\"")
     }
@@ -43,11 +45,11 @@ task("generateResourcesConstants") {
     }
 
     doFirst {
-        sourceSets["main"].resources.asFileTree.visit(Action<FileVisitDetails> {
+        sourceSets["main"].resources.asFileTree.visit {
             val name = path.toUpperCase().replace("\\W".toRegex(), "_")
 
             buildResources.buildConfigField("java.io.File", name, "File(\"$path\")")
-        })
+        }
     }
 
     generateBuildConfig.dependsOn(this)
@@ -61,16 +63,18 @@ buildConfig.forClass("properties") {
 
     val generatePropertiesBuildConfig: BuildConfigTask by tasks
     val newOutputForRes = generatePropertiesBuildConfig.outputDir
-        .let { File(it.parentFile, "res${it.name.capitalize()}") }
+        .asFile
+        .map { File(it.parentFile, "res${it.name.capitalize()}") }
 
     generator(object : BuildConfigGenerator {
 
         override fun execute(spec: BuildConfigTaskSpec) {
-            newOutputForRes.mkdirs()
+            val finalOutput = newOutputForRes.get()
+            finalOutput.mkdirs()
 
             Properties().apply {
-                spec.fields.forEach { setProperty(it.name, it.value) }
-                storeToXML(FileOutputStream(File(newOutputForRes, "${spec.className}.xml")), null)
+                spec.fields.get().forEach { setProperty(it.name, it.value) }
+                storeToXML(FileOutputStream(File(finalOutput, "${spec.className}.xml")), null)
             }
         }
 
